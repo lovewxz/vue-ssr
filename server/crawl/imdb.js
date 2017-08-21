@@ -3,6 +3,9 @@ import rp from 'request-promise'
 import R from 'ramda'
 import { writeFileSync } from 'fs'
 import { resolve } from 'path'
+import QiniuSDK from '../lib/qiniuSDK'
+import randomToken from 'random-token'
+
 const sleep = (time) => {
   return new Promise((resolve, reject) => {
     if (time) {
@@ -134,4 +137,29 @@ export const getIMDBImages = async() => {
   return checkedData
 }
 
-getIMDBImages()
+export const fetchImageFromIMDB = async() => {
+  let IMDBCharacters = require(resolve(__dirname, '../../finalCharacters.json'))
+  IMDBCharacters = R.map(async item => {
+    try {
+      let key = `${item.nmId}/${randomToken(32)}`
+      const Qiniu = new QiniuSDK()
+      console.log(key)
+      console.log(item.profile)
+      await Qiniu.fetchImage(item.profile, key)
+      item.profile = key
+      for (let i = 0; i < item.images.length; i++) {
+        let _key = `${item.nmId}/${randomToken(32)}`
+        await Qiniu.fetchImage(item.images[i], _key)
+        await sleep(100)
+        item.images[i] = _key
+      }
+    } catch (e) {
+      console.error(e)
+    }
+    return item
+  })(IMDBCharacters)
+  IMDBCharacters = await Promise.all(IMDBCharacters)
+  writeFileSync('./completeCharaters.json', JSON.stringify(IMDBCharacters, null, 2), 'utf-8')
+}
+
+fetchImageFromIMDB()
