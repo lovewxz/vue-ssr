@@ -13,7 +13,7 @@ config.dev = !(process.env === 'production')
 
 // Instantiate nuxt.js
 const nuxt = new Nuxt(config)
-const MIDDLEWARE = ['database', 'router']
+const MIDDLEWARE = ['database', 'common', 'router']
 
 class Server {
   constructor(host, port) {

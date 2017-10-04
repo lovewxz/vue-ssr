@@ -17,29 +17,34 @@ import { mapActions } from 'vuex'
 import axios from 'axios'
 
 export default {
-  asyncData({ req }) {
-    return {
-      name: req ? 'server' : 'client'
-    }
-  },
   head() {
     return {
-      title: `About Page (${this.name}-side)`
+      title: 'loading'
     }
   },
   methods: {
+    _getUrlParam(param) {
+      const reg = new RegExp(`(^|&)${param}=([^&]*)(&|$)`)
+      const result = window.location.search.substr(1).match(reg)
+      return result ? decodeURIComponent(result[2]) : null
+    },
     ...mapActions([
-      'getUserInfo'
+      'getWechatOauth',
+      'setAuthUser'
     ])
   },
-  beforeMount() {
-    let url = window.location.href
-    url = encodeURIComponent(url)
-    this.getUserInfo(url).then(res => {
-      if (res.data.success) {
-        console.log(res.data.data)
-      }
-    })
+  async beforeMount() {
+    const url = window.location.href
+    const { data } = await this.getWechatOauth(url)
+    console.log(data)
+    if (data.success) {
+      await this.setAuthUser(data.data)
+      const paramsArr = this._getUrlParam('state').split('_')
+      const visit = paramsArr.length === 1 ? `/${paramsArr[0]}` : `/${paramsArr[0]}?id=${paramsArr[1]}`
+      this.$router.replace(visit)
+    } else {
+      throw new Error('用户信息获取失败')
+    }
   }
 }
 </script>

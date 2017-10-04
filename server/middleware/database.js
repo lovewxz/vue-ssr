@@ -34,11 +34,24 @@ export const database = app => {
     console.log('Connect to MongoDB', config.db)
     const WikiHouse = mongoose.model('WikiHouse')
     const WikiCharacter = mongoose.model('WikiCharacter')
+    const User = mongoose.model('User')
 
     const existWikiHouse = await WikiHouse.find({}).exec()
     const existCharacter = await WikiCharacter.find({}).exec()
 
     if(!existWikiHouse.length) WikiHouse.insertMany(wikiHouses)
     if(!existCharacter.length) WikiCharacter.insertMany(wikiCharacters)
+    console.log('写入数据库')
+    let user = await User.findOne({
+      email: 'yaojun@qq.com'
+    }).exec()
+    if(!user) {
+      user = new User({
+        email: 'yaojun@qq.com',
+        password: '123456',
+        role: 'admin'
+      })
+      await user.save()
+    }
   })
 }

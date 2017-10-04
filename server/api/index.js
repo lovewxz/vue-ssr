@@ -1,7 +1,11 @@
-import { getSignatureAsync, getAuthorizeURL, getUserInfoByCode } from './wechat'
+import * as wechat from './wechat'
+import * as wiki from './wiki'
+import * as product from './product'
+import * as user from './user'
 
-export {
-  getSignatureAsync,
-  getAuthorizeURL,
-  getUserInfoByCode
+export default {
+  wechat,
+  wiki,
+  product,
+  user
 }

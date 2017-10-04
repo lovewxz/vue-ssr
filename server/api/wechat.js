@@ -1,4 +1,6 @@
 import { getWechat, getOAuth } from '../wechat'
+import mongoose from 'mongoose'
+const User = mongoose.model('User')
 
 export async function getSignatureAsync(url) {
   const Wechat = getWechat()
@@ -20,7 +22,24 @@ export function getAuthorizeURL(...args) {
 export async function getUserInfoByCode(code) {
   const OAuth = getOAuth()
   const data = await OAuth.fetchAccessToken(code)
-  console.log(data)
+
   const userInfo = await OAuth.getUserInfo(data.access_token, data.openid)
+  const existUser = await User.findOne({
+    openid: data.openid
+  }).exec()
+  if (!existUser) {
+    let newUser = new User({
+      openid: [data.openid],
+      unionid: data.unionid || '',
+      nickname: userInfo.nickname,
+      province: userInfo.province,
+      country: userInfo.country,
+      city: userInfo.city,
+      sex: userInfo.sex,
+      headimgurl: userInfo.headimgurl
+    })
+    await newUser.save()
+  }
+
   return userInfo
 }

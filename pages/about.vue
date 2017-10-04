@@ -27,10 +27,21 @@ export default {
       title: `About Page (${this.name}-side)`
     }
   },
+  data() {
+    return {
+      test: {}
+    }
+  },
   methods: {
     ...mapActions([
       'getWechatSignature'
     ])
+  },
+  created() {
+    const test = axios.get('/wiki/houses').then(res => {
+      console.log(res.data)
+      return res.data
+    })
   },
   beforeMount() {
     console.log(1)
